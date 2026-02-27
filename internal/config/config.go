@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 
@@ -23,8 +24,6 @@ type HTTPServer struct {
 // 3. Create MustLoad() function (loads configuration before app starts)
 func MustLoad() *Config {
 
-	// 4. Inside MustLoad():
-
 	// STEP A: Get config path from environment variable (CONFIG_PATH)
 	var configPath string
 	configPath = os.Getenv("CONFIG_PATH")
@@ -43,17 +42,17 @@ func MustLoad() *Config {
 	}
 
 	// STEP D: Check if config file exists
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-
-		// STEP E: If file does not exist → stop program
+	fileInfo, err := os.Stat(configPath)
+	if err != nil {
 		log.Fatalf("Config file does not exist: %s", configPath)
 	}
+	fmt.Println("File info:", fileInfo)
 
 	// STEP F: Create empty Config variable
 	var cfg Config
 
 	// STEP G: Read YAML file into Config struct
-	err := cleanenv.ReadConfig(configPath, &cfg)
+	err = cleanenv.ReadConfig(configPath, &cfg)
 
 	// STEP H: If reading fails → stop program
 	if err != nil {
@@ -62,5 +61,4 @@ func MustLoad() *Config {
 
 	// STEP I: Return Config object
 	return &cfg
-
 }
