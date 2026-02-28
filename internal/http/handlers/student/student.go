@@ -29,7 +29,7 @@ func New() http.HandlerFunc {
 		// 5️  Handle decoding errors
 		if err != nil {
 
-			// 5   If body is empty → return 400 Bad Request
+			// 5   If body is eStudentmpty → return 400 Bad Request
 			if errors.Is(err, io.EOF) {
 				response.GeneralError(err)
 				return
