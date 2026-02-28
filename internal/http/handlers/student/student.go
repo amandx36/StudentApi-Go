@@ -3,17 +3,20 @@ package student
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 
+	"github.com/amandx36/studentCrudApiGo/internal/storage"
 	"github.com/amandx36/studentCrudApiGo/internal/types"
 	"github.com/amandx36/studentCrudApiGo/internal/utils/response"
 	"github.com/go-playground/validator/v10"
 )
 
 // 1    New() returns an HTTP handler function for creating a student
-func New() http.HandlerFunc {
+// pass the interface of all type so  that we can implemnt it dude
+func New( storage storage.Storage) http.HandlerFunc {
 
 	// 2️  Handler receives:
 	//    - responseSender :) for sending request
@@ -61,11 +64,22 @@ func New() http.HandlerFunc {
 		}
 
 		// 7️ for storing the data into database
-		// service.CreateStudent(student)
+		// 
+		lastId , err :=storage.CreateStudent(
+			student.Name,
+			student.Email,
+			int64(student.Age),
+		)
+		if err !=nil{
+			response.WriteJson(responseSender, http.StatusInternalServerError , err)
+			return 
+		}
 
 		// 8️  Send success response
 		response.WriteJson(responseSender, http.StatusCreated, map[string]string{
 			"message": "Successfully created",
+			"Id":string(lastId),
 		})
+		slog.Info("User created sucessfully dude ",slog.String("With User id  ",fmt.Sprint(lastId)))
 	}
 }

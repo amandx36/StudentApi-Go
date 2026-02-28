@@ -36,12 +36,36 @@ func New(cfg *config.Config) (*Sqlite, error) {
 		return nil, err
 	}
 
-	// create empty Sqlite struct 
+	// create empty Sqlite struct
 	repo := Sqlite{}
-	// Access its filed Db and store the connection into this dude 
-	
+	// Access its filed Db and store the connection into this dude
+
 	repo.Db = db
 
 	// 3. Return repository with DB
 	return &repo, nil
+}
+
+// implementing the interface dude  and attaching the interface to sqlite dude
+
+
+func (s *Sqlite) CreateStudent(name string, email string, age int64) (int64, error) {
+	statement, err := s.Db.Prepare("INSERT INTO students(name,email,age)values(?,?,?)")
+
+	if err != nil {
+		return 0, nil
+	}
+	defer statement.Close() // free the resource
+
+	result, err := statement.Exec(name, email, age)
+	if err != nil {
+		return 0, nil
+	}
+
+	lastId, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return lastId, nil
 }
