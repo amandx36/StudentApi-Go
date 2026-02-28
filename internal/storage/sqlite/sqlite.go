@@ -3,12 +3,13 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
+	"log/slog"
 
 	"github.com/amandx36/studentCrudApiGo/internal/types"
 
+
 	"github.com/amandx36/studentCrudApiGo/internal/config"
 	_ "github.com/mattn/go-sqlite3" // register sqlite driver
-
 )
 
 // Sqlite wraps DB connection
@@ -108,3 +109,44 @@ func (s *Sqlite)GetStudentById(id int64) (types.Student , error){
 	return student , nil
 
 }
+
+// implementing to all the list dude
+
+func (s *Sqlite)GetStudents()([] types.Student, error){
+	statement , err := s.Db.Prepare(
+
+		"SELECT id, name, email, age FROM students ",
+
+	)
+	if err !=nil{
+		slog.Info("Error in getting the users",err)
+	}
+	
+	defer statement.Close()
+
+
+	rows , err := statement.Query()
+	if err !=nil{
+		return nil , err 
+
+	}
+	defer rows.Close()
+
+	var students []types.Student 
+
+	// for loop in all the loops and than put inside dude 
+
+	for rows.Next(){
+		var student  types.Student
+
+		error := rows.Scan(&student.Id , & student.Name , &student.Email , &student.Age )
+		 if error !=nil{
+			return nil , error 
+		 }
+		 students = append(students , student)
+
+	}
+	return students , nil 
+}
+
+

@@ -91,24 +91,35 @@ func GetStudentById(storage storage.Storage) http.HandlerFunc {
 
 		slog.Info("Getting a student", slog.String("id", id))
 
-		intId , err := strconv.ParseInt(id, 10 , 64 )
-		if err !=nil{
-			response.WriteJson(responseSender , http.StatusBadRequest, response.GeneralError(err))
+		intId, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			response.WriteJson(responseSender, http.StatusBadRequest, response.GeneralError(err))
 		}
-		student,err := storage.GetStudentById(intId)
+		student, err := storage.GetStudentById(intId)
 
-		if err !=nil{
-			slog.Error("Error  in the getting users" , slog.String("id",fmt.Sprint(intId)))
+		if err != nil {
+			slog.Error("Error  in the getting users", slog.String("id", fmt.Sprint(intId)))
 
+			response.WriteJson(responseSender, http.StatusInternalServerError, response.GeneralError(err))
+			return
 
-			response.WriteJson(responseSender,http.StatusInternalServerError,response.GeneralError(err))
-			return 
-		
 		}
-		response.WriteJson(responseSender,http.StatusOK,student)
+		response.WriteJson(responseSender, http.StatusOK, student)
 	}
 
+}
+// implementing other api end points dude 
+
+func GetList(storage storage.Storage) http.HandlerFunc {
+	return func(responseSender http.ResponseWriter, requesting *http.Request) {
+		
+		slog.Info("Getting all the students ")
+		students , err := storage.GetStudents()
+		if err !=nil{
+			response.WriteJson(responseSender,http.StatusInternalServerError,err )
+		}
+
+		response.WriteJson(responseSender,http.StatusOK,students)
+	}
 
 }
-
-// now attach to the struct dude
