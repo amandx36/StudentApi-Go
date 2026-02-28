@@ -9,14 +9,15 @@ import (
 
 	"github.com/amandx36/studentCrudApiGo/internal/types"
 	"github.com/amandx36/studentCrudApiGo/internal/utils/response"
+	"github.com/go-playground/validator/v10"
 )
 
 // 1    New() returns an HTTP handler function for creating a student
 func New() http.HandlerFunc {
 
 	// 2️  Handler receives:
-	//    - responseSender :) for sending request 
-	//    - requesting     get from frontEnd 
+	//    - responseSender :) for sending request
+	//    - requesting     get from frontEnd
 	return func(responseSender http.ResponseWriter, requesting *http.Request) {
 
 		// 3️  Create empty Student struct
@@ -30,9 +31,7 @@ func New() http.HandlerFunc {
 
 			// 5   If body is empty → return 400 Bad Request
 			if errors.Is(err, io.EOF) {
-				response.WriteJson(responseSender, http.StatusBadRequest, map[string]string{
-					"error": "empty request body",
-				})
+				response.GeneralError(err)
 				return
 			}
 
@@ -43,10 +42,25 @@ func New() http.HandlerFunc {
 			return
 		}
 
-		// 6  Log 
+		// 6  Log
 		slog.Info("Creating a student")
 
-		// 7️ for storing the data into database 
+		// 7 Request validation
+		// using inbuilt package
+		//   go get github.com/go-playground/validator/v10
+
+		// we have to add the field  validation according to  in response struct
+
+		if err := validator.New().Struct(student); err != nil {
+
+			// now type casting because we need to transform into other one dude
+			validateErrors := err.(validator.ValidationErrors)
+
+			response.WriteJson(responseSender, http.StatusBadRequest, response.ValidationError(validateErrors))
+			return
+		}
+
+		// 7️ for storing the data into database
 		// service.CreateStudent(student)
 
 		// 8️  Send success response
