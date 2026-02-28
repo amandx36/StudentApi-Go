@@ -7,6 +7,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/amandx36/studentCrudApiGo/internal/storage"
 	"github.com/amandx36/studentCrudApiGo/internal/types"
@@ -16,7 +17,7 @@ import (
 
 // 1    New() returns an HTTP handler function for creating a student
 // pass the interface of all type so  that we can implemnt it dude
-func New( storage storage.Storage) http.HandlerFunc {
+func New(storage storage.Storage) http.HandlerFunc {
 
 	// 2️  Handler receives:
 	//    - responseSender :) for sending request
@@ -64,22 +65,50 @@ func New( storage storage.Storage) http.HandlerFunc {
 		}
 
 		// 7️ for storing the data into database
-		// 
-		lastId , err :=storage.CreateStudent(
+		//
+		lastId, err := storage.CreateStudent(
 			student.Name,
 			student.Email,
 			int64(student.Age),
 		)
-		if err !=nil{
-			response.WriteJson(responseSender, http.StatusInternalServerError , err)
-			return 
+		if err != nil {
+			response.WriteJson(responseSender, http.StatusInternalServerError, err)
+			return
 		}
 
 		// 8️  Send success response
 		response.WriteJson(responseSender, http.StatusCreated, map[string]string{
 			"message": "Successfully created",
-			"Id":string(lastId),
+			"Id":      string(lastId),
 		})
-		slog.Info("User created sucessfully dude ",slog.String("With User id  ",fmt.Sprint(lastId)))
+		slog.Info("User created sucessfully dude ", slog.String("With User id  ", fmt.Sprint(lastId)))
 	}
 }
+
+func GetStudentById(storage storage.Storage) http.HandlerFunc {
+	return func(responseSender http.ResponseWriter, requesting *http.Request) {
+		id := requesting.PathValue("id")
+
+		slog.Info("Getting a student", slog.String("id", id))
+
+		intId , err := strconv.ParseInt(id, 10 , 64 )
+		if err !=nil{
+			response.WriteJson(responseSender , http.StatusBadRequest, response.GeneralError(err))
+		}
+		student,err := storage.GetStudentById(intId)
+
+		if err !=nil{
+			slog.Error("Error  in the getting users" , slog.String("id",fmt.Sprint(intId)))
+
+
+			response.WriteJson(responseSender,http.StatusInternalServerError,response.GeneralError(err))
+			return 
+		
+		}
+		response.WriteJson(responseSender,http.StatusOK,student)
+	}
+
+
+}
+
+// now attach to the struct dude

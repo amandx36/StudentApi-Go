@@ -2,9 +2,13 @@ package sqlite
 
 import (
 	"database/sql"
+	"fmt"
+
+	"github.com/amandx36/studentCrudApiGo/internal/types"
 
 	"github.com/amandx36/studentCrudApiGo/internal/config"
 	_ "github.com/mattn/go-sqlite3" // register sqlite driver
+
 )
 
 // Sqlite wraps DB connection
@@ -68,4 +72,39 @@ func (s *Sqlite) CreateStudent(name string, email string, age int64) (int64, err
 	}
 
 	return lastId, nil
+}
+
+
+// now again attach to the struct dude 
+
+func (s *Sqlite)GetStudentById(id int64) (types.Student , error){ 
+
+	statement , err := s.Db.Prepare(
+
+		"SELECT id, name, email, age FROM students WHERE id = ? LIMIT 1",
+
+	)
+	if err != nil{
+		return types.Student{},err
+	}
+	defer statement.Close()
+
+	// all clear than return the data dude 
+	var student types.Student
+
+	// now put into to the data base dude
+	err = statement.QueryRow(id).Scan(&student.Id,&student.Name,&student.Email,&student.Age)
+
+	// if we got  the error than we do this 
+	if err !=nil{
+		// if no user found than do this dude 
+		if err ==sql.ErrNoRows{
+			return types.Student{} , fmt.Errorf("No Student with this id  %d found ",id)
+		}
+
+		// if other error happends than do this  dude 
+		return types.Student{} , fmt.Errorf("Querry error %w",err)
+	}
+	return student , nil
+
 }
