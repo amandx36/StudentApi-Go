@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/amandx36/studentCrudApiGo/internal/config"
+	"github.com/amandx36/studentCrudApiGo/internal/http/handlers/student"
 )
 
 func main() {
@@ -21,16 +22,14 @@ func main() {
 	// set up router
 	router := http.NewServeMux()
 
-	router.HandleFunc("GET /", func(response http.ResponseWriter, request *http.Request) {
-		// returning the data
-		response.Write([]byte("Welcome to my Student api "))
-
-	})
+	router.HandleFunc("POST /api/v1/students",student.New())
 	// setup server dude
 	server := http.Server{
 		Addr:    cfg.Addr,
 		Handler: router,
 	}
+
+
 	slog.Info("server is starting ")
 	log.Println("Starting Student API...")
 	log.Println("Server listening on", cfg.HTTPServer.Addr)
